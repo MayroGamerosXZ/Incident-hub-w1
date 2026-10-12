@@ -1,0 +1,84 @@
+# ==============================================================
+# PIPELINE PRINCIPAL DE CI/CD - AZURE PIPELINES
+# Proyecto: IT Incident Hub (DevOps Integrador)
+# Responsable: [DevOps Lead] Alex Rivera (AB#23, AB#30)
+# ==============================================================
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  # Puede ejecutarse en el Self-Hosted Agent local ('Default' / 'LocalPool') o en agente hosted
+  name: 'Default'
+
+variables:
+  NODE_VERSION: '18.x'
+  BUILD_CONFIGURATION: 'Release'
+
+steps:
+  # 1. Checkout del código fuente
+  - checkout: self
+    displayName: '1. Checkout de Código Fuente'
+
+  # 2. Configuración de entorno Node.js
+  - task: NodeTool@0
+    displayName: '2. Configurar Node.js $(NODE_VERSION)'
+    inputs:
+      versionSpec: $(NODE_VERSION)
+
+  # 3. Instalación y Restauración de dependencias
+  - script: |
+      echo "=== Restaurando dependencias Backend ==="
+      cd backend
+      npm install
+      echo "=== Restaurando dependencias Frontend ==="
+      cd ../frontend
+      npm install
+      echo "=== Restaurando dependencias Tests ==="
+      cd ../tests
+      npm install
+    displayName: '3. Instalación / Restauración de Dependencias'
+
+  # 4. Revisión de Dependencias y Seguridad (SCA)
+  - script: |
+      echo "=== Ejecutando Auditoría de Seguridad con npm audit ==="
+      cd backend
+      npm audit --audit-level=high
+    displayName: '4. Revisión de Dependencias y Seguridad (AB#27)'
+
+  # 5. Ejecución de Pruebas Automatizadas
+  - script: |
+      echo "=== Ejecutando Suite de Pruebas Unitarias ==="
+      cd tests
+      npm test
+    displayName: '5. Ejecución de Pruebas Unitarias en Jest (AB#24)'
+
+  # 6. Compilación / Build (Frontend React + Vite)
+  - script: |
+      echo "=== Compilando Frontend React ==="
+      cd frontend
+      npm run build
+    displayName: '6. Compilación de Frontend (Vite Build)'
+
+  # 7. Empaquetado de Artefactos
+  - task: CopyFiles@2
+    displayName: '7. Copiar Archivos al Directorio de Artefactos'
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: |
+        backend/**
+        frontend/dist/**
+        database/**
+        docs/**
+        README.md
+      TargetFolder: '$(Build.ArtifactStagingDirectory)/drop'
+
+  # 8. Publicación del Artefacto
+  - task: PublishBuildArtifacts@1
+    displayName: '8. Publicar Artefacto de Release (AB#30)'
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)/drop'
+      ArtifactName: 'incident-hub-drop'
+      publishLocation: 'Container'

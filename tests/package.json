@@ -1,0 +1,11 @@
+{
+  "name": "incident-hub-tests",
+  "version": "1.0.0",
+  "description": "Suite de pruebas automatizadas para IT Incident Hub",
+  "scripts": {
+    "test": "node --test api.test.js"
+  },
+  "dependencies": {
+    "supertest": "^6.3.4"
+  }
+}
