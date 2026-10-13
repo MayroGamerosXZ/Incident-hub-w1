@@ -15,7 +15,7 @@ const VALID_CATEGORIES = ['HARDWARE', 'SOFTWARE', 'NETWORK', 'SECURITY', 'ACCESS
 
 // Almacenamiento en memoria resiliente (Mock Data para ejecución autónoma o fallback de BD)
 let users = [
-  { id: 1, name: 'Alex Rivera (DevOps)', email: 'devops.lead@incidents.local', role: 'ADMIN' },
+  { id: 1, name: 'Mayro Gameros (DevOps Lead)', email: 'devops.lead@incidents.local', role: 'ADMIN' },
   { id: 2, name: 'Carlos Mendoza (Backend)', email: 'backend.dev@incidents.local', role: 'TECHNICIAN' },
   { id: 3, name: 'Sofia Gomez (Frontend)', email: 'frontend.dev@incidents.local', role: 'TECHNICIAN' },
   { id: 4, name: 'Diego Ramirez (DB)', email: 'database.admin@incidents.local', role: 'ADMIN' },

@@ -1,7 +1,7 @@
 # ==============================================================
 # PIPELINE PRINCIPAL DE CI/CD - AZURE PIPELINES
 # Proyecto: IT Incident Hub (DevOps Integrador)
-# Responsable: [DevOps Lead] Alex Rivera (AB#23, AB#30)
+# Responsable: [DevOps Lead] Mayro Geovanni Barrios Gameros (AB#23, AB#30)
 # ==============================================================
 
 trigger:
