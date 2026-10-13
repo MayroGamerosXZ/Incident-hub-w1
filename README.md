@@ -11,9 +11,9 @@
 
 Para garantizar el cumplimiento de las normas DevOps de trazabilidad y gobernanza de código, las responsabilidades se distribuyen formalmente entre 6 áreas técnicas:
 
-| Rol / Área | Responsable Simulado | Git Author | Responsabilidad Principal |
+| Rol / Área | Responsable Oficial | Git Author / Usuario | Responsabilidad Principal |
 |---|---|---|---|
-| **DevOps & Cloud Lead** | Alex Rivera | `devops.lead@incidents.local` | Pipelines CI/CD, GitHub Actions, Docker y agentes autohospedados. |
+| **DevOps & Cloud Lead** | **Mayro Geovanni Barrios Gameros** (`@MayroGamerosXZ`) | `devops.lead@incidents.local` | Liderazgo del proyecto, Azure Pipelines, GitHub Actions, Docker y Self-hosted agent. |
 | **Backend Engineer** | Carlos Mendoza | `backend.dev@incidents.local` | API REST Node.js/Express, controladores y lógica de negocio. |
 | **Frontend UI/UX Dev** | Sofia Gomez | `frontend.dev@incidents.local` | Interfaz React (Vite), estado reactivo y dashboard de incidentes. |
 | **Database Architect** | Diego Ramirez | `database.admin@incidents.local` | Esquema relacional PostgreSQL, scripts DDL y persistencia. |

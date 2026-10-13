@@ -5,7 +5,7 @@
 
 -- Inserción de Usuarios del Equipo de TI
 INSERT INTO users (name, email, role) VALUES
-('Alex Rivera (DevOps)', 'devops.lead@incidents.local', 'ADMIN'),
+('Mayro Gameros (DevOps Lead)', 'devops.lead@incidents.local', 'ADMIN'),
 ('Carlos Mendoza (Backend)', 'backend.dev@incidents.local', 'TECHNICIAN'),
 ('Sofia Gomez (Frontend)', 'frontend.dev@incidents.local', 'TECHNICIAN'),
 ('Diego Ramirez (DB)', 'database.admin@incidents.local', 'ADMIN'),

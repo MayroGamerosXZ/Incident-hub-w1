@@ -6,9 +6,9 @@ param(
 
 switch ($Role) {
     "devops" {
-        git config user.name "Alex Rivera (DevOps Lead)"
+        git config user.name "Mayro Gameros (DevOps Lead)"
         git config user.email "devops.lead@incidents.local"
-        Write-Host "Cambiado a: Alex Rivera (DevOps Lead)" -ForegroundColor Cyan
+        Write-Host "Cambiado a: Mayro Gameros (DevOps Lead)" -ForegroundColor Cyan
     }
     "backend" {
         git config user.name "Carlos Mendoza (Backend Dev)"
