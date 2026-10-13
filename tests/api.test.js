@@ -1,49 +1,77 @@
-const test = require('node:test');
+﻿const test = require('node:test');
 const assert = require('node:assert');
-const app = require('../backend/server.js');
+const {
+  VALID_STATUSES,
+  validateCreateIncident,
+  filterIncidentsList
+} = require('../backend/src/validators/incidentValidator.js');
+const {
+  canTransitionStatus,
+  computeDashboardMetrics
+} = require('../backend/src/services/workflowService.js');
 
-// Simple helper para simular peticiones HTTP usando supertest si está disponible, o mocks directos
-test('Suite de Pruebas Unitarias - IT Incident Hub (AB#24)', async (t) => {
-  
-  await t.test('1. Validar que la API expone el estado de salud UP', () => {
-    assert.strictEqual(typeof app, 'function');
+test('Suite de Pruebas Unitarias e Integracion - IT Incident Hub (AB#24)', async (t) => {
+
+  await t.test('1. Validar estructura de los 5 estados obligatorios del ciclo de vida', () => {
+    const expected = ['NUEVO', 'ASIGNADO', 'EN_PROCESO', 'RESUELTO', 'CERRADO'];
+    assert.deepStrictEqual(VALID_STATUSES, expected);
   });
 
-  await t.test('2. Validar estructura de estados requeridos por la rúbrica', () => {
-    const requiredStatuses = ['NUEVO', 'ASIGNADO', 'EN_PROCESO', 'RESUELTO', 'CERRADO'];
-    assert.strictEqual(requiredStatuses.length, 5);
-    assert.ok(requiredStatuses.includes('NUEVO'));
-    assert.ok(requiredStatuses.includes('ASIGNADO'));
-    assert.ok(requiredStatuses.includes('EN_PROCESO'));
-    assert.ok(requiredStatuses.includes('RESUELTO'));
-    assert.ok(requiredStatuses.includes('CERRADO'));
+  await t.test('2. Validar creacion de incidente valido e invalido (AB#8)', () => {
+    const validRes = validateCreateIncident({
+      title: 'Caida de enlace primario',
+      description: 'Sin salida a internet en sucursal norte',
+      category: 'NETWORK',
+      reported_by: 'admin@empresa.com'
+    });
+    assert.strictEqual(validRes.valid, true);
+    assert.strictEqual(validRes.errors.length, 0);
+
+    const invalidRes = validateCreateIncident({
+      title: 'Corto',
+      description: 'Corto',
+      category: 'INVALID_CAT',
+      reported_by: 'correo_invalido'
+    });
+    assert.strictEqual(invalidRes.valid, false);
+    assert.ok(invalidRes.errors.length >= 3);
   });
 
-  await t.test('3. Validar cálculo de métricas del Dashboard (AB#33)', () => {
-    const mockIncidents = [
-      { id: 1, status: 'NUEVO', priority: 'ALTA' },
-      { id: 2, status: 'EN_PROCESO', priority: 'CRITICA' },
-      { id: 3, status: 'CERRADO', priority: 'BAJA' }
+  await t.test('3. Validar motor de filtros por estado, prioridad, categoria y tecnico (AB#11)', () => {
+    const sample = [
+      { id: 1, title: 'Switch caido', description: 'Red', status: 'ASIGNADO', priority: 'ALTA', category: 'NETWORK', assigned_to_id: 2, reported_by: 'a@b.com' },
+      { id: 2, title: 'DB lenta', description: 'SQL', status: 'EN_PROCESO', priority: 'CRITICA', category: 'SOFTWARE', assigned_to_id: 4, reported_by: 'c@d.com' }
     ];
-    const abiertos = mockIncidents.filter(i => ['NUEVO', 'ASIGNADO', 'EN_PROCESO'].includes(i.status)).length;
-    const cerrados = mockIncidents.filter(i => ['RESUELTO', 'CERRADO'].includes(i.status)).length;
-    const criticos = mockIncidents.filter(i => i.priority === 'CRITICA' && i.status !== 'CERRADO').length;
+    const byTech = filterIncidentsList(sample, { assigned_to_id: 4 });
+    assert.strictEqual(byTech.length, 1);
+    assert.strictEqual(byTech[0].id, 2);
 
-    assert.strictEqual(abiertos, 2);
-    assert.strictEqual(cerrados, 1);
-    assert.strictEqual(criticos, 1);
+    const byPriority = filterIncidentsList(sample, { priority: 'ALTA' });
+    assert.strictEqual(byPriority.length, 1);
+    assert.strictEqual(byPriority[0].id, 1);
   });
 
-  await t.test('4. Validar validaciones de campos obligatorios al registrar incidente (AB#8)', () => {
-    const payloadValido = {
-      title: 'Fallo de impresora',
-      description: 'No enciende',
-      category: 'HARDWARE',
-      reported_by: 'usuario@empresa.com'
-    };
-    assert.ok(payloadValido.title.length > 0);
-    assert.ok(payloadValido.description.length > 0);
-    assert.ok(payloadValido.category.length > 0);
-    assert.ok(payloadValido.reported_by.includes('@'));
+  await t.test('4. Validar reglas de transicion de estados (AB#15)', () => {
+    assert.strictEqual(canTransitionStatus('NUEVO', 'ASIGNADO'), true);
+    assert.strictEqual(canTransitionStatus('EN_PROCESO', 'RESUELTO'), true);
+    assert.strictEqual(canTransitionStatus('CERRADO', 'NUEVO'), false);
+  });
+
+  await t.test('5. Validar calculo de metricas del Dashboard y distribucion (AB#33)', () => {
+    const mockIncidents = [
+      { id: 1, status: 'NUEVO', priority: 'ALTA', category: 'NETWORK', assigned_to_id: 1 },
+      { id: 2, status: 'EN_PROCESO', priority: 'CRITICA', category: 'SOFTWARE', assigned_to_id: 1 },
+      { id: 3, status: 'CERRADO', priority: 'BAJA', category: 'HARDWARE', assigned_to_id: 2 }
+    ];
+    const mockUsers = [
+      { id: 1, name: 'Tech 1' },
+      { id: 2, name: 'Tech 2' }
+    ];
+    const stats = computeDashboardMetrics(mockIncidents, mockUsers);
+    assert.strictEqual(stats.total, 3);
+    assert.strictEqual(stats.abiertos, 2);
+    assert.strictEqual(stats.cerrados, 1);
+    assert.strictEqual(stats.criticos, 1);
+    assert.strictEqual(stats.porTecnico.find(u => u.id === 1).asignados, 2);
   });
 });
