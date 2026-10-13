@@ -57,3 +57,13 @@ CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status);
 CREATE INDEX IF NOT EXISTS idx_incidents_priority ON incidents(priority);
 CREATE INDEX IF NOT EXISTS idx_incidents_category ON incidents(category);
 CREATE INDEX IF NOT EXISTS idx_incidents_assigned_to ON incidents(assigned_to_id);
+
+-- 5. Vista Analitica para Indicadores de Dashboard (AB#7, AB#18)
+CREATE OR REPLACE VIEW v_incident_metrics AS
+SELECT
+    category,
+    priority,
+    status,
+    COUNT(*) AS total_incidents
+FROM incidents
+GROUP BY category, priority, status;
