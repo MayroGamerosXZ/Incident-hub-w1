@@ -1,34 +1,34 @@
-name: CI Pull Request Validation
+﻿name: CI Pull Request Validation
 
 on:
   pull_request:
+    branches: [ main ]
+  push:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
   lint-and-audit:
-    name: Lint & Security Audit (AB#26)
+    name: Lint, Tests & Security Audit (AB#26)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Código
+      - name: Checkout Codigo
         uses: actions/checkout@v4
 
       - name: Configurar Node.js 18
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: backend/package.json
 
       - name: Instalar Dependencias Backend
         working-directory: backend
         run: npm install
 
-      - name: Auditoría de Seguridad de Dependencias (SCA)
+      - name: Auditoria de Seguridad de Dependencias (SCA)
         working-directory: backend
         run: npm audit --audit-level=high
 
-      - name: Ejecutar Pruebas Automatizadas en PR
+      - name: Ejecutar Suite de Pruebas Automatizadas
         working-directory: tests
         run: |
           npm install
